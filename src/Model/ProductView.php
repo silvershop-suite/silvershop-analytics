@@ -7,6 +7,7 @@ namespace SilverShop\Analytics\Model;
 use SilverShop\Page\Product;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\Queries\SQLSelect;
 use SilverStripe\Security\Member;
 
 /**
@@ -62,6 +63,53 @@ class ProductView extends DataObject
         $view->write();
 
         return $view;
+    }
+
+    /**
+     * Product IDs ranked by recorded views, most-viewed first — a read-only helper for surfaces that want a
+     * "most viewed" / "popular right now" list (e.g. a storefront search dropdown). Reads the raw view log
+     * directly, so figures are live. $sinceDays > 0 limits to views in the last N days (a "recent" window);
+     * 0 counts all retained rows. Callers load the products themselves and apply their own visibility rules
+     * (this intentionally returns IDs, not objects, and does not care whether a product still exists).
+     *
+     * @return list<int> ordered product IDs, most-viewed first (at most $limit)
+     */
+    public static function topProductIDs(int $limit = 4, int $sinceDays = 0): array
+    {
+        if ($limit <= 0) {
+            return [];
+        }
+
+        try {
+            $query = SQLSelect::create();
+            $query->setSelect([
+                'ProductID' => '"ProductID"',
+                'Views' => 'COUNT("ID")',
+            ]);
+            $query->setFrom('"SilverShop_ProductView"');
+
+            if ($sinceDays > 0) {
+                $cutoff = date('Y-m-d H:i:s', strtotime("-{$sinceDays} days"));
+                $query->addWhere(['"Created" >= ?' => $cutoff]);
+            }
+
+            $query->setGroupBy('"ProductID"');
+            $query->setOrderBy('COUNT("ID")', 'DESC');
+            $query->setLimit($limit);
+
+            $ids = [];
+            foreach ($query->execute() as $row) {
+                $id = (int) $row['ProductID'];
+                if ($id > 0) {
+                    $ids[] = $id;
+                }
+            }
+
+            return $ids;
+        } catch (\Throwable $e) {
+            // Table may not exist yet (pre dev/build) or a query/dialect error — never let a "popular" widget fatal.
+            return [];
+        }
     }
 
     /**
