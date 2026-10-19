@@ -14,7 +14,7 @@ search-term reporting can be added later without a redesign (see [Roadmap](#road
 ## Installation
 
 ```bash
-composer require silvershop/analytics
+composer require silvershop-suite/analytics
 ```
 
 Then run `dev/build?flush=1`.
@@ -67,7 +67,7 @@ vendor/bin/sake tasks:SilverShop-Analytics-Task-PruneProductViewsTask
 
 ## Search-term tracking
 
-Exposes `SilverShop\Analytics\SearchInsights::record($term, $resultCount)` — a search module (e.g. `silvershop/search`)
+Exposes `SilverShop\Analytics\SearchInsights::record($term, $resultCount)` — a search module (e.g. `silvershop-suite/search`)
 calls it on every query, which stores a normalised `SearchLog` row and powers two reports:
 
 - **Top search terms** — most frequent searches and their average result count.
@@ -75,7 +75,7 @@ calls it on every query, which stores a normalised `SearchLog` row and powers tw
 
 Terms are lower-cased and whitespace-collapsed so variants aggregate. No PII is stored; the member link is off unless
 `SearchInsights.track_members` is enabled, and rows prune after `SearchLog.retention_days` (via `PruneSearchLogTask`).
-`silvershop/search` wires this automatically when both modules are installed.
+`silvershop-suite/search` wires this automatically when both modules are installed.
 
 ```yaml
 SilverShop\Analytics\SearchInsights:

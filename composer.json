@@ -1,5 +1,5 @@
 {
-    "name": "silvershop/analytics",
+    "name": "silvershop-suite/analytics",
     "description": "Catalog analytics for SilverShop: privacy-friendly product-view tracking and a most-viewed-products report, with a record() API that a search module can feed for search-term reports.",
     "type": "silverstripe-vendormodule",
     "keywords": ["silverstripe", "silvershop", "ecommerce", "analytics", "reports", "most-viewed"],
